@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System;
+using System.IO;
 
 
 namespace C969
@@ -29,6 +31,8 @@ namespace C969
         }
 
         public bool button1WasClicked;
+
+        private static string logFilePath = "Login_History.txt";
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -75,6 +79,12 @@ namespace C969
 
                         MessageBox.Show("You've logged in successfully.");
                     }
+                    string logMessage = $"{DateTime.Now.ToString()} - User test logged in.";
+
+                    using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                    {
+                        writer.WriteLine(logMessage);
+                    }
                 }
                 catch (MySqlException ex)
                 {
@@ -84,7 +94,7 @@ namespace C969
                 {
                     conn.Close();
                 }
-                this.Hide();
+
                 Main main = new Main();
                 main.Show();
             }

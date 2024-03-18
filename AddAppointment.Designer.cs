@@ -87,7 +87,7 @@
             // monthCalendar1
             // 
             this.monthCalendar1.BackColor = System.Drawing.SystemColors.HighlightText;
-            this.monthCalendar1.Location = new System.Drawing.Point(12, 34);
+            this.monthCalendar1.Location = new System.Drawing.Point(12, 102);
             this.monthCalendar1.Name = "monthCalendar1";
             this.monthCalendar1.TabIndex = 17;
             this.monthCalendar1.DateChanged += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateChanged);
@@ -119,7 +119,7 @@
             // comboBox2
             // 
             this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(12, 320);
+            this.comboBox2.Location = new System.Drawing.Point(12, 32);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(312, 28);
             this.comboBox2.TabIndex = 26;
@@ -127,7 +127,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(8, 14);
+            this.label3.Location = new System.Drawing.Point(8, 73);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(97, 20);
             this.label3.TabIndex = 27;
@@ -145,7 +145,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 297);
+            this.label6.Location = new System.Drawing.Point(8, 9);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(137, 20);
             this.label6.TabIndex = 29;

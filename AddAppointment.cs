@@ -28,7 +28,7 @@ namespace C969
 
         private int GetCustomerIdByName(string customerName)
         {
-            string query = "SELECT CustomerID FROM customer WHERE CustomerName = @CustomerName";
+            string query = "SELECT CustomerID FROM customer WHERE CustomerID = @CustomerID";
             string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
 
             using (MySqlConnection con = new MySqlConnection(connectionString))
@@ -36,7 +36,7 @@ namespace C969
             {
                 try
                 {
-                    cmd.Parameters.AddWithValue("@CustomerName", customerName);
+                    cmd.Parameters.AddWithValue("@CustomerID", customerName);
                     con.Open();
 
                     object result = cmd.ExecuteScalar();
@@ -50,7 +50,32 @@ namespace C969
             }
         }
 
-        private int GetUserIdByName(string userName)
+        private int GetPhoneByCustomerId (string customerName)
+        {
+            string query = "SELECT phone FROM customer WHERE Phone = @Phone";
+            string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
+
+            using (MySqlConnection con = new MySqlConnection(connectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, con))
+            {
+                try
+                {
+                    cmd.Parameters.AddWithValue("@CustomerID", customerName);
+                    con.Open();
+
+                    object result = cmd.ExecuteScalar();
+                    return result != null && result != DBNull.Value ? Convert.ToInt32(result) : -1;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                    return -1;
+                }
+            }
+        }
+
+
+        private int? GetUserIdByName(string userName)
         {
             string query = "SELECT UserID FROM user WHERE UserName = @UserName";
             string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
@@ -64,12 +89,12 @@ namespace C969
                     con.Open();
 
                     object result = cmd.ExecuteScalar();
-                    return result != null && result != DBNull.Value ? Convert.ToInt32(result) : -1;
+                    return result != null && result != DBNull.Value ? Convert.ToInt32(result) : (int?)null;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error: " + ex.Message);
-                    return -1;
+                    return null;
                 }
             }
         }
@@ -85,7 +110,7 @@ namespace C969
             MySqlCommand userCmd = new MySqlCommand(userQuery, con);
             userCmd.Parameters.AddWithValue("@UserName", userName);
             userCmd.Parameters.AddWithValue("@Password", "");
-            userCmd.Parameters.AddWithValue("@Active", "Yes");
+            userCmd.Parameters.AddWithValue("@Active", 1);
             userCmd.Parameters.AddWithValue("@CreateDate", DateTime.Now);
             userCmd.Parameters.AddWithValue("@CreatedBy", "sqlUser");
             userCmd.Parameters.AddWithValue("@LastUpdate", DateTime.Now);
@@ -106,21 +131,23 @@ namespace C969
 
                     int appointmentId = appointmentId_Counter++;
                     string title = textBox4.Text;
-                    string customerName = "";
                     string userName = textBox3.Text;
-                    int customerId = GetCustomerIdByName(customerName);
-                    int userId = GetUserIdByName(userName);
+                    int? userId = GetUserIdByName(userName);
 
-                    if (userId == 0)
+                    if (userId == null || userId == 0)
                     {
                         userId = InsertNewUser(userName, con);
                     }
 
-                    if (customerId == 0)
+                    string customerName = textBox3.Text; 
+                    int customerId = GetCustomerIdByName(customerName);
+
+                    if (customerId == -1)
                     {
                         MessageBox.Show("Invalid customer. Please check the customer information.");
                         return;
                     }
+                   
 
                     string description = textBox5.Text;
                     string location = "Main Office";
@@ -130,7 +157,7 @@ namespace C969
                     DateTime selectedDate = monthCalendar1.SelectionStart.Date;
                     DateTime selectedTime = DateTime.ParseExact(comboBox1.Text, "hh:mm tt", CultureInfo.InvariantCulture);
                     DateTime start = selectedDate.Add(selectedTime.TimeOfDay);
-                    DateTime end = start.AddHours(1);
+                    DateTime end = start.AddHours(0.5);
                     DateTime createDate = DateTime.Now;
                     string createdBy = "sqlUser";
                     string lastUpdate = createDate.ToString("yyyy-MM-dd HH:mm:ss");
@@ -158,13 +185,18 @@ namespace C969
                     appointmentCmd.Parameters.AddWithValue("@LastUpdateBy", lastUpdateBy);
                     appointmentCmd.ExecuteNonQuery();
 
-                    
 
-                    Main form = new Main();
-                    form.UpdateDataGridView2();
+
+                    Main form = (Main)Application.OpenForms["Main"];
+                    if (form != null)
+                    {
+                        form.UpdateDataGridView2();
+                        form.dataGridView2.Refresh();
+                    }
 
                     MessageBox.Show("Appointment added successfully.");
                     this.Close();
+                    form.dataGridView2.Refresh();
                 }
                 catch (MySqlException ex)
                 {

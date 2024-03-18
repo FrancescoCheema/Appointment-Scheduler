@@ -47,7 +47,7 @@ namespace C969
                 {
                     con.Open();
 
-                    string query = "SELECT address.Phone, address.Address, customer.CustomerName, address.AddressID " +
+                    string query = "SELECT customer.CustomerID, address.Phone, address.Address, customer.CustomerName, address.AddressID " +
                                    "FROM address " +
                                    "JOIN customer ON address.AddressID = customer.AddressId";
 
@@ -77,7 +77,7 @@ namespace C969
                 {
                     con.Open();
 
-                    string query = "SELECT appointment.Title, appointment.Description, appointment.Start " +
+                    string query = "SELECT appointment.CustomerID, appointment.Title, appointment.Description, appointment.Start, appointment.End " +
                                    "FROM appointment ";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
@@ -199,7 +199,67 @@ namespace C969
 
         private void button3_Click(object sender, EventArgs e)
         {
+            if (dataGridView2.SelectedRows.Count > 0)
+            {
+                string description = dataGridView2.SelectedRows[0].Cells["Description"].Value.ToString();
 
+                string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
+                using (MySqlConnection con = new MySqlConnection(connectionString))
+                {
+                    try
+                    {
+                        con.Open();
+
+                        string query = @"
+                    DELETE FROM appointment
+                    WHERE Description = @Description;
+                ";
+
+                        MySqlCommand cmd = new MySqlCommand(query, con);
+                        cmd.Parameters.AddWithValue("@Description", description);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            MessageBox.Show("Record deleted successfully.");
+                            UpdateDataGridView2();
+                            dataGridView2.Refresh();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Record not found or already deleted.");
+                        }
+                    }
+                    catch (MySqlException ex)
+                    {
+                        MessageBox.Show("Error: " + ex.Message);
+                    }
+                }
+                
+            }
+            else
+            {
+                MessageBox.Show("No row is selected.");
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (dataGridView2.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dataGridView2.SelectedRows[0];
+                UpdateAppointment form = new UpdateAppointment(selectedRow);
+                form.textBox1.Text = dataGridView2.SelectedRows[0].Cells["Start"].Value.ToString();
+                form.textBox4.Text = dataGridView2.SelectedRows[0].Cells["Title"].Value.ToString();
+                form.textBox5.Text = dataGridView2.SelectedRows[0].Cells["Description"].Value.ToString();
+                form.textBox3.Text = dataGridView2.SelectedRows[0].Cells["CustomerID"].Value.ToString();
+                form.ShowDialog();
+                UpdateDataGridView2(); ;
+            }
+            else
+            {
+                MessageBox.Show("No row has been selected");
+            }
         }
     }
 }

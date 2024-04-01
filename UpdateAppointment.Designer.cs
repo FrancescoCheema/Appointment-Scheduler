@@ -142,6 +142,7 @@
             this.monthCalendar1.Location = new System.Drawing.Point(50, 115);
             this.monthCalendar1.Name = "monthCalendar1";
             this.monthCalendar1.TabIndex = 38;
+            this.monthCalendar1.DateChanged += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateChanged);
             // 
             // button2
             // 
@@ -151,6 +152,7 @@
             this.button2.TabIndex = 37;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // button1
             // 

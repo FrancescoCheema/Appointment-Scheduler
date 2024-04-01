@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="Address.cs" />
     <Compile Include="Appointment.cs" />
+    <Compile Include="AppointmentReport.cs" />
     <Compile Include="City.cs" />
     <Compile Include="Country.cs" />
     <Compile Include="Customer.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="CustomerUpdate.Designer.cs">
       <DependentUpon>CustomerUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Reports.cs" />
     <Compile Include="UpdateAppointment.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -142,6 +144,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="UserReport.cs" />
     <EmbeddedResource Include="AddAppointment.resx">
       <DependentUpon>AddAppointment.cs</DependentUpon>
     </EmbeddedResource>

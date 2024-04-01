@@ -26,7 +26,7 @@ namespace C969
 
         private int userId_Counter;
 
-        private int GetCustomerIdByName(string customerName)
+        public int GetCustomerIdByName(string customerName)
         {
             string query = "SELECT CustomerID FROM customer WHERE CustomerID = @CustomerID";
             string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
@@ -50,7 +50,7 @@ namespace C969
             }
         }
 
-        private int GetPhoneByCustomerId (string customerName)
+        public int GetPhoneByCustomerId (string customerName)
         {
             string query = "SELECT phone FROM customer WHERE Phone = @Phone";
             string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
@@ -120,6 +120,36 @@ namespace C969
             return userId;
         }
 
+        private bool IsTimeConflicted(DateTime start, DateTime end)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
+            string query = @"
+                SELECT COUNT(*) 
+                FROM appointment 
+                WHERE start < @End 
+                AND end > @Start;
+            ";
+
+            using (MySqlConnection con = new MySqlConnection(connectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, con))
+            {
+                try
+                {
+                    cmd.Parameters.AddWithValue("@Start", start);
+                    cmd.Parameters.AddWithValue("@End", end);
+                    con.Open();
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                    return true; 
+                }
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
@@ -147,18 +177,25 @@ namespace C969
                         MessageBox.Show("Invalid customer. Please check the customer information.");
                         return;
                     }
-                   
 
                     string description = textBox5.Text;
                     string location = "Main Office";
                     string type = "Appointment";
-                    string contact = "";
+                    string contact = GetPhoneByCustomerId(customerName).ToString();
                     string url = ".";
                     DateTime selectedDate = monthCalendar1.SelectionStart.Date;
                     DateTime selectedTime = DateTime.ParseExact(comboBox1.Text, "hh:mm tt", CultureInfo.InvariantCulture);
                     DateTime start = selectedDate.Add(selectedTime.TimeOfDay);
-                    DateTime end = start.AddHours(0.5);
+                    DateTime end = start.AddHours(0.25);
                     DateTime createDate = DateTime.Now;
+
+
+                    if (IsTimeConflicted(start, end))
+                    {
+                        MessageBox.Show("This time slot is already scheduled. Please choose another time.", "Time Slot Conflict", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     string createdBy = "sqlUser";
                     string lastUpdate = createDate.ToString("yyyy-MM-dd HH:mm:ss");
                     string lastUpdateBy = "sqlUser";
@@ -253,7 +290,6 @@ namespace C969
                     textBox1.Invoke((Action)(() =>
                     {
                         textBox1.Text = selectedDate.ToShortDateString().ToString();
-
                     }));
 
                     List<string> itemsToAdd = new List<string>();
@@ -295,6 +331,11 @@ namespace C969
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }

@@ -37,7 +37,7 @@ namespace C969
        
         public int customerID_Counter = 0;
 
-        public int addressID_Counter;
+        public int addressID_Counter = 0;
 
         public int countryID_Counter = 0;
 
@@ -53,7 +53,7 @@ namespace C969
                 con.Open();
 
                 string address = textBox4.Text; 
-                string addressid = addressID_Counter.ToString() + 1;
+                string addressid = addressID_Counter++.ToString();
                 string address2 = "";
                 string city = "";
                 string country = "";

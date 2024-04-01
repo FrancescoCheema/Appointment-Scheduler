@@ -15,12 +15,12 @@ namespace C969
         public string url { get; set; }
         public DateTime start { get; set; }
         public DateTime end { get; set; }
-        public int CreateDate { get; set; }
+        public DateTime CreateDate { get; set; }
         public int CreatedBy { get; set; }
         public int LastUpdate { get; set; }
         public int LastUpdateBy { get; set; }
 
-        public Appointment(int AppointmentId, int CustomerId, int userId, string title, string description, string location, string contact, string type, string url, DateTime start, DateTime end, int CreateDate, int LastUpdate, int LastUpdateBy)
+        public Appointment(int AppointmentId, int CustomerId, int userId, string title, string description, string location, string contact, string type, string url, DateTime start, DateTime end, DateTime CreateDate, int LastUpdate, int LastUpdateBy)
         {
             AppointmentId = AppointmentId;
             CustomerId = CustomerId;

@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace C969
 {
@@ -27,16 +30,19 @@ namespace C969
                 {
                     while (reader.Read())
                     {
-                        int userId = reader.GetInt32(0);
-                        int appointmentID = reader.GetInt32(1);
-                        int customerID = reader.GetInt32(2);
-                        DateTime start = reader.GetDateTime(3);
-                        DateTime end = reader.GetDateTime(4);
+                        int userId = reader.GetInt32(0); // UserID at index 0
+                        int appointmentID = reader.GetInt32(1); // AppointmentID at index 1
+                        int customerID = reader.GetInt32(2); // CustomerID at index 2
+                        DateTime start = reader.GetDateTime(3); // Start at index 3
+                        DateTime end = reader.GetDateTime(4); // End at index 4
 
                         UserReport userReport = new UserReport(appointmentID, userId, customerID, start, end);
 
-                        report.TryGetValue(userId, out List<UserReport> userReports);
-                        report[userId] = userReports ?? new List<UserReport>();
+                        if (!report.ContainsKey(userId))
+                        {
+                            report[userId] = new List<UserReport>();
+                        }
+
                         report[userId].Add(userReport);
                     }
                 }
@@ -47,44 +53,36 @@ namespace C969
 
         public Dictionary<string, Dictionary<string, int>> GenerateAppointmentTypesByMonthReport()
         {
+            Dictionary<string, Dictionary<string, int>> report = new Dictionary<string, Dictionary<string, int>>();
+
+            using (MySqlConnection con = new MySqlConnection(connectionString))
             {
-                Dictionary<string, Dictionary<string, int>> report = new Dictionary<string, Dictionary<string, int>>();
-
-                using (MySqlConnection con = new MySqlConnection(connectionString))
+                con.Open();
+                string query = "SELECT Type, MONTH(Start) AS Month, COUNT(*) AS Count FROM Appointment GROUP BY Type, MONTH(Start)";
+                using (MySqlCommand cmd = new MySqlCommand(query, con))
+                using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
-                    con.Open();
-                    string query = "SELECT Type, MONTH(Start) AS Month, COUNT(*) AS Count FROM Appointment GROUP BY Type, MONTH(Start)";
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    while (reader.Read())
                     {
-                        report = Enumerable.Range(0, reader.FieldCount)
-                            .ToDictionary(
-                                i => reader.GetName(i),
-                                i => new Dictionary<string, int>()
-                            );
+                        string type = reader.GetString("Type");
+                        string month = reader.GetInt32("Month").ToString("00");
+                        int count = reader.GetInt32("Count");
 
-                        while (reader.Read())
+                        if (!report.ContainsKey(month))
                         {
-                            string type = reader.GetString("Type");
-                            string month = reader.GetInt32("Month").ToString("00");
-                            int count = reader.GetInt32("Count");
-
-                            report["Month"].TryGetValue(month, out int monthCount);
-                            report["Month"][month] = monthCount + count;
-
-                            report["Type"].TryGetValue(type, out int typeCount);
-                            report["Type"][type] = typeCount + count;
+                            report[month] = new Dictionary<string, int>();
                         }
+
+                        report[month][type] = count;
                     }
                 }
-
-                return report;
             }
+
+            return report;
         }
 
         public Dictionary<int, List<Appointments>> GenerateUserScheduleReportByCustomerID()
         {
-
             Dictionary<int, List<Appointments>> report = new Dictionary<int, List<Appointments>>();
 
             using (MySqlConnection con = new MySqlConnection(connectionString))
@@ -100,104 +98,25 @@ namespace C969
                 {
                     while (reader.Read())
                     {
-                        int customerID = reader.GetInt32(0);
                         int appointmentID = reader.GetInt32(1);
+                        int customerID = reader.GetInt32(0);
                         DateTime start = reader.GetDateTime(2);
                         DateTime end = reader.GetDateTime(3);
 
                         Appointments appointment = new Appointments(appointmentID, customerID, start, end);
 
-                        if (!report.TryGetValue(customerID, out List<Appointments> appointments))
+                        if (!report.ContainsKey(customerID))
                         {
-                            appointments = new List<Appointments>();
-                            report[customerID] = appointments;
+                            report[customerID] = new List<Appointments>();
                         }
 
-                        appointments.Add(appointment);
+                        report[customerID].Add(appointment);
                     }
                 }
             }
 
             return report;
         }
-
-        public List<Appointments> ViewAppointmentsForDay(DateTime date)
-        {
-            List<Appointments> appointmentsForDay = new List<Appointments>();
-
-            using (MySqlConnection con = new MySqlConnection(connectionString))
-            {
-                con.Open();
-                string query = @"
-            SELECT AppointmentID, CustomerID, Start, End
-            FROM Appointment
-            WHERE DATE(Start) = @Date;
-        ";
-                using (MySqlCommand cmd = new MySqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@Date", date.Date);
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int appointmentID = reader.GetInt32(0);
-                            int customerID = reader.GetInt32(1);
-                            DateTime start = reader.GetDateTime(2);
-                            DateTime end = reader.GetDateTime(3);
-
-                            Appointments appointment = new Appointments(appointmentID, customerID, start, end);
-                            appointmentsForDay.Add(appointment);
-                        }
-                    }
-                }
-            }
-
-            return appointmentsForDay;
-        }
-
-        public Dictionary<DateTime, List<Appointments>> ViewAppointmentCalendarByMonth(DateTime month)
-        {
-            Dictionary<DateTime, List<Appointments>> calendar = new Dictionary<DateTime, List<Appointments>>();
-
-            DateTime firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
-            DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-
-            using (MySqlConnection con = new MySqlConnection(connectionString))
-            {
-                con.Open();
-                string query = @"
-                SELECT AppointmentID, CustomerID, Start, End
-                FROM Appointment
-                WHERE Start >= @FirstDayOfMonth AND End <= @LastDayOfMonth;
-            ";
-                using (MySqlCommand cmd = new MySqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@FirstDayOfMonth", firstDayOfMonth.Date);
-                    cmd.Parameters.AddWithValue("@LastDayOfMonth", lastDayOfMonth.Date);
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int appointmentID = reader.GetInt32(0);
-                            int customerID = reader.GetInt32(1);
-                            DateTime start = reader.GetDateTime(2);
-                            DateTime end = reader.GetDateTime(3);
-
-                            Appointments appointment = new Appointments(appointmentID, customerID, start, end);
-                            DateTime appointmentDate = start.Date;
-
-                            if (!calendar.ContainsKey(appointmentDate))
-                            {
-                                calendar[appointmentDate] = new List<Appointments>();
-                            }
-
-                            calendar[appointmentDate].Add(appointment);
-                        }
-                    }
-                }
-            }
-
-            return calendar;
-        }
     }
 }
+

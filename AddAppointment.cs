@@ -269,6 +269,7 @@ namespace C969
 
         private async void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
         {
+            Main form = new Main();
             await Task.Run(() =>
             {
                 try
@@ -282,6 +283,7 @@ namespace C969
                     TimeZoneInfo selectedTimeZone = TimeZoneInfo.FindSystemTimeZoneById(selectedTimeZoneId);
 
                     DateTime selectedDate = monthCalendar1.SelectionStart;
+
                     DateTimeOffset selectedDateTimeOffset = new DateTimeOffset(selectedDate, selectedTimeZone.GetUtcOffset(selectedDate));
 
                     DateTime startTime = TimeZoneInfo.ConvertTime(selectedDateTimeOffset, selectedTimeZone).DateTime.AddHours(9);

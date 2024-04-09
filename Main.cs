@@ -24,11 +24,71 @@ namespace C969
             appointmentTimer.Start();
         }
 
+        private void ViewAppointmentCalendarByMonth(DateTime selectedDate)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
+            string query = @"
+        SELECT UserID, Start, End, Title, Description
+        FROM appointment 
+        WHERE YEAR(Start) = @Year AND MONTH(Start) = @Month
+    ";
+
+            using (MySqlConnection con = new MySqlConnection(connectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, con))
+            {
+                try
+                {
+                    cmd.Parameters.AddWithValue("@Year", selectedDate.Year);
+                    cmd.Parameters.AddWithValue("@Month", selectedDate.Month);
+                    con.Open();
+
+                    DataTable dataTable = new DataTable();
+                    dataTable.Load(cmd.ExecuteReader());
+
+                    dataGridView6.DataSource = dataTable;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+            }
+        }
+
+        private void ViewAppointmentsForSpecificDay(DateTime selectedDate)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["localdb"].ConnectionString;
+            string query = @"
+        SELECT UserID, Start, End, Title, Description
+        FROM appointment 
+        WHERE DATE(Start) = @SelectedDate
+    ";
+
+            using (MySqlConnection con = new MySqlConnection(connectionString))
+            using (MySqlCommand cmd = new MySqlCommand(query, con))
+            {
+                try
+                {
+                    cmd.Parameters.AddWithValue("@SelectedDate", selectedDate.Date);
+                    con.Open();
+
+                    DataTable dataTable = new DataTable();
+                    dataTable.Load(cmd.ExecuteReader());
+
+                    dataGridView6.DataSource = dataTable;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+            }
+        }
+
+
         private void AppointmentTimer_Tick(object sender, EventArgs e)
         {
             GenerateAppointmentAlerts();
         }
-
+        
         private void Add_Click(object sender, EventArgs e)
         {
             Form1 customerAdd = new Form1();
@@ -453,13 +513,33 @@ namespace C969
             return dataTable;
         }
 
-        private void button11_Click(object sender, EventArgs e)
+        private void dataGridView6_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
-        
-        private void button10_Click(object sender, EventArgs e)
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
+            if (radioButton1.Checked)
+            {
+                ViewAppointmentCalendarByMonth(dateTimePicker1.Value);
+            }
+            else if (radioButton2.Checked)
+            {
+                ViewAppointmentsForSpecificDay(dateTimePicker1.Value);
+            }
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            bool viewByMonths = radioButton1.Checked;
+            dateTimePicker1.Enabled = viewByMonths;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            bool viewByDays = radioButton2.Checked;
+            dateTimePicker1.Enabled = viewByDays;
         }
     }
 }

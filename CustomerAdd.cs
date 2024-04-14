@@ -149,9 +149,44 @@ namespace C969
             }
         }
 
+        private void ValidateTextBoxes()
+        {
+            if (textBox2.Text.Length > 0 && textBox4.Text.Length > 0 && textBox5.Text.Length >= 10)
+            {
+                button1.Enabled = true;
+            }
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(textBox2.Text))
+            {
+                button1.Enabled = false;
+                textBox2.BackColor = Color.Red;
+            }
+            else
+            {
+                textBox2.BackColor = Color.White;
 
+            }
+            if (string.IsNullOrEmpty(textBox4.Text))
+            {
+                button1.Enabled = false;
+                textBox4.BackColor = Color.Red;
+            }
+            else
+            {
+                textBox4.BackColor = Color.White;
+            }
+            if (string.IsNullOrEmpty(textBox5.Text))
+            {
+                button1.Enabled = false;
+                textBox5.BackColor = Color.Red;
+            }
+            else
+            {
+                textBox5.BackColor = Color.White;
+            }
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
@@ -199,7 +234,16 @@ namespace C969
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-
+            if (string.IsNullOrEmpty(textBox4.Text))
+            {
+                button1.Enabled = false;
+                textBox4.BackColor = Color.Red;
+            }
+            else
+            {
+                textBox4.BackColor = Color.White;
+                ValidateTextBoxes();
+            }
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
@@ -209,7 +253,16 @@ namespace C969
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-
+            if (string.IsNullOrEmpty(textBox2.Text))
+            {
+                button1.Enabled = false;
+                textBox2.BackColor = Color.Red;
+            }
+            else
+            {
+                textBox2.BackColor = Color.White;
+                ValidateTextBoxes();
+            }
         }
 
         private void TextBox_TextChanged(object sender, EventArgs e)
